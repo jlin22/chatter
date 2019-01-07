@@ -10,7 +10,11 @@ class Title extends React.Component {
 
 class MessageList extends React.Component {
 	render() {
-		return null;
+		const data = this.props.data;
+		const dataList = data.map((message) => 
+			<li key={message.id}><div>{message.senderId}</div><div>{message.text}</div></li>
+		);
+		return <ul className="message-list">{dataList}</ul>
 	}
 }
 
