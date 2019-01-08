@@ -3,9 +3,14 @@ import ReactDOM from 'react-dom';
 import './style.css';
 import { ChatManager, TokenProvider } from '@pusher/chatkit-client'
 
+const instanceLocator = 'v1:us1:0a20a97e-0739-46dd-a807-7fb16747ead7';
+const testToken = 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/0a20a97e-0739-46dd-a807-7fb16747ead7/token';
+const username = 'john';
+const roomId = 19613407;
+
 class Title extends React.Component {
 	render() {
-		return null;
+		return <p class="title">Chatter</p>
 	}
 }
 
@@ -26,6 +31,7 @@ class SendMessageForm extends React.Component {
 			message: ''
 		}
 		this.handleChange = this.handleChange.bind(this);
+		this.handleSubmit = this.handleSubmit.bind(this);
 	}
 
 	handleChange(event) {
@@ -34,15 +40,25 @@ class SendMessageForm extends React.Component {
 		})
 	}
 
+	handleSubmit(event) {
+		event.preventDefault();
+//		this.props.sendMessage(this.state.message);
+		this.setState({
+			message: ''
+		});
+	}
+
 	render() {
 		return (
-			<form className="send-message-form">
+			<form 
+				onSubmit={this.handleSubmit}
+				className="send-message-form">
 				<input 
 					type="text" 
 					value={this.state.message}
 					onChange={this.handleChange}
 				/>
-				<p>{this.state.message}</p>
+				{this.state.message}
 			</form>
 		);
 	}
@@ -52,8 +68,9 @@ class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			messages: this.props.data
+			messages: [] 
 		}
+		this.sendMessage = this.sendMessage.bind(this)
 	}
 
 	componentDidMount() {
@@ -66,7 +83,8 @@ class App extends React.Component {
 		});
 
 		chatManager.connect().then(currentUser => {
-			currentUser.subscribeToRoom({
+			this.currentUser = currentUser
+			this.currentUser.subscribeToRoom({
 			roomId: roomId,
 			hooks: {
 				onNewMessage: message => {
@@ -78,34 +96,26 @@ class App extends React.Component {
 		})
 	}
 
+	sendMessage(text) {
+		this.currentUser.sendMessage({
+			text,
+			roomId: roomId
+		});
+	}
+
 	render() {
 		return (
 			<div className="app">
 				<Title />
 				<MessageList data={this.state.messages}/>
-				<SendMessageForm />
+				<SendMessageForm sendMessage={this.sendMessage}/>
 			</div>
 		);
 	}
 }
 
-const dummyData = [
-	{
-		senderId: 'john',
-		text: 'why is programming fun?'
-	},
-	{
-		senderId: 'computer',
-		text: 'wrong question to ask.'
-	}
-];
-
-const instanceLocator = 'v1:us1:0a20a97e-0739-46dd-a807-7fb16747ead7';
-const testToken = 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/0a20a97e-0739-46dd-a807-7fb16747ead7/token';
-const username = 'john';
-const roomId = '19613407';
 
 ReactDOM.render(
-	<App data={dummyData}/>,
+	<App />,
 	document.getElementById('root')
 );
