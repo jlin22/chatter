@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './style.css';
+import { ChatManager, TokenProvider } from '@pusher/chatkit-client'
 
 class Title extends React.Component {
 	render() {
@@ -18,9 +19,17 @@ class MessageList extends React.Component {
 	}
 }
 
-class SendMessagesForm extends React.Component {
+class SendMessageForm extends React.Component {
 	render() {
-		return null;
+		return (
+			<form>
+				<input 
+					type="text" 
+					value={this.props.message}
+					onChange={this.handleChange}
+				/>
+			</form>
+		);
 	}
 }
 
@@ -28,15 +37,38 @@ class App extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			data: this.props.data
+			messages: this.props.data
 		}
 	}
+
+	componentDidMount() {
+		const chatManager = new ChatManager({
+			instanceLocator: instanceLocator,
+			userId: username,
+			tokenProvider: new TokenProvider({
+				url: testToken
+			})
+		});
+
+		chatManager.connect().then(currentUser => {
+			currentUser.subscribeToRoom({
+			roomId: roomId,
+			hooks: {
+				onNewMessage: message => {
+					this.setState({
+						messages: this.messages.concat(message)
+					})}
+				}	
+			})
+		})
+	}
+
 	render() {
 		return (
 			<div className="app">
 				<Title />
-				<MessageList data={this.state.data}/>
-				<SendMessagesForm />
+				<MessageList data={this.state.messages}/>
+				<SendMessageForm />
 			</div>
 		);
 	}
@@ -52,6 +84,11 @@ const dummyData = [
 		text: 'wrong question to ask.'
 	}
 ];
+
+const instanceLocator = 'v1:us1:0a20a97e-0739-46dd-a807-7fb16747ead7';
+const testToken = 'https://us1.pusherplatform.io/services/chatkit_token_provider/v1/0a20a97e-0739-46dd-a807-7fb16747ead7/token';
+const username = 'john';
+const roomId = '19613407';
 
 ReactDOM.render(
 	<App data={dummyData}/>,
