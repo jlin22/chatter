@@ -20,14 +20,29 @@ class MessageList extends React.Component {
 }
 
 class SendMessageForm extends React.Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			message: ''
+		}
+		this.handleChange = this.handleChange.bind(this);
+	}
+
+	handleChange(event) {
+		this.setState({
+			message: event.target.value
+		})
+	}
+
 	render() {
 		return (
-			<form>
+			<form className="send-message-form">
 				<input 
 					type="text" 
-					value={this.props.message}
+					value={this.state.message}
 					onChange={this.handleChange}
 				/>
+				<p>{this.state.message}</p>
 			</form>
 		);
 	}
